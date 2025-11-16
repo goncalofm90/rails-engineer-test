@@ -1,0 +1,29 @@
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <h1 class="mb-4">Company Search</h1>
+      
+      <%= form_with url: companies_path, method: :get, data: { controller: "search", action: "input->search#submit" }, class: "mb-4" do |f| %>
+        <div class="input-group input-group-lg">
+          <%= f.text_field :query, 
+              class: "form-control", 
+              placeholder: "Name/Coc number",
+              value: params[:query],
+              autofocus: true,
+              data: { search_target: "input" } %>
+          <button class="btn btn-primary" type="submit">
+            <i class="bi bi-search"></i> Search
+          </button>
+        </div>
+      <% end %>
+
+      <div id="search-results" data-search-target="results">
+        <%= render "results" %>
+      </div>
+
+      <div class="mt-4">
+        <%= link_to "Admin: Import Companies", new_admin_import_path, class: "btn btn-sm btn-secondary" %>
+      </div>
+    </div>
+  </div>
+</div>
