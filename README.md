@@ -31,7 +31,7 @@ cd company-search
 bundle install
 ```
 
-> **Note for Mac M4 Users**: The gemfile was updated but if you encounter native extension build errors (particularly with `sqlite3` or `nokogiri`), update your `Gemfile` to use compatible versions:
+> **Note for Mac M4 Users**: The gemfile was updated but if you encounter native extension build errors (particularly with `sqlite3` , `nokogiri` or `nio4r`), update your `Gemfile` to use compatible versions:
 >
 > ```ruby
 > # Use sqlite3 as the database for Active Record
@@ -39,6 +39,9 @@ bundle install
 > 
 > # For nokogiri compatibility on ARM Macs
 > gem "nokogiri", "~> 1.15"
+> # For nio4r
+> gem "nio4r (~> 2.0)"
+>
 > ```
 >
 > Then run:
