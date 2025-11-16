@@ -1,44 +1,156 @@
-# Rails engineer test
+# Company Search Application
 
-We'll be using this test to assess your skill level as Rails engineer. This test is designed to covered a wide variety of skills that are needed in the day-to-day job of a Rails engineer at [Beequip](https://www.beequip.nl/). We expect you to spend a maximum of four hours on this test. You can use Google and Stack Overflow, just like you would normally do. Don't worry when you run out of time though, we would still like to see what you came up with!
+A Rails web application for searching companies with CSV import functionality. Built as a technical assessment for Beequip.
 
-## Objectives and requirements
+## Tech Stack
 
-Create a Rails web application that provides an search interface for companies, with the following functional requirements taking into account:
+- Ruby on Rails 7.0
+- SQLite (development)
+- Stimulus.js for interactive features
+- Turbo Streams for real-time updates
+- Bootstrap 5 for styling
 
-- Admins should have a page to import companies by uploading a CSV-file (you can find the CSV-file in `config/data/companies.csv`)
-- Users should be presented with a search field when they visit the root
-- Users should be able to see search results when using the name, city or registry number of a company
-- Users should see the search results progressively e.g. when they type 'Be' they should see all companies that have 'Be' in their name, city or registry number
+## Setup Instructions
 
-Have a look at the [search page of KvK](https://www.kvk.nl/zoeken/) as an inspiration.
+### Prerequisites
 
-Furthermore you should take the following technical requirements into account:
+- Ruby 3.x
+- Rails 7.x
+- Bundler
 
-- Companies have a unique CoC-number, in case of duplicates you keep the last result
-- Search queries need to be performed using SQL on the backend, no in-memory filtering with Ruby is allowed
-- There's no authentication required, it's a public page
-- There's no user logic or authorization required regarding the admin interface
-- Use the pre-installed Bootstrap and Stimulus.JS libraries to implement the user stories
-- Remember you have a limited time, prefer functionality over web design
+### Installation
 
-During your technical interview you'll also be asked how to implement changing requirements.
-
-## Getting started
-
-Make sure that you can run Ruby 3.1.x, Rails 7.0.x, Bundler 2.3.x and Yarn 1.22.x on your laptop and get started using:
-
-```
-bin/bundle install
-yarn install
-bin/rails db:setup
-bin/rails s
+1. **Clone the repository**:
+```bash
+git clone <repository-url>
+cd company-search
 ```
 
-## Deliverables
+2. **Install dependencies**:
+```bash
+bundle install
+```
 
-Send us a link to the hosted repository with your code. It can be hosted anywhere e.g. Github, Gitlab as long as you provide us access. Include all the code and instructions that are necessary to run the application.
+> **Note for Mac M4 Users**: The gemfile was updated but if you encounter native extension build errors (particularly with `sqlite3` or `nokogiri`), update your `Gemfile` to use compatible versions:
+>
+> ```ruby
+> # Use sqlite3 as the database for Active Record
+> gem "sqlite3", "~> 1.7"
+> 
+> # For nokogiri compatibility on ARM Macs
+> gem "nokogiri", "~> 1.15"
+> ```
+>
+> Then run:
+> ```bash
+> bundle update sqlite3 nokogiri
+> ```
 
-## Questions
+3. **Setup database**:
+```bash
+rails db:create
+rails db:migrate
+```
 
-In case you have questions about the test you can contact Jan van der Pas (`jan.vanderpas@beequip.nl`) or Marthyn Olthof (`marthyn.olthof@beequip.nl`).
+4. **Verify schema**:
+Check that `db/schema.rb` exists and contains the expression indexes for case-insensitive search.
+
+5. **Start the server**:
+```bash
+rails server
+```
+
+6. **Access the application**:
+- Search page: http://localhost:3000
+- Admin import: http://localhost:3000/admin/imports/new
+
+## Usage
+
+### Importing Companies
+
+1. Navigate to http://localhost:3000/admin/imports/new
+2. Upload a CSV file with the following format:
+   ```
+   coc_number;company_name;city
+   12345678;Example Company BV;Amsterdam
+   87654321;Another Corp;Rotterdam
+   ```
+
+### Validation Rules
+
+- CoC number is required (rows with blank CoC numbers are skipped)
+- Company name is required
+- Duplicate CoC numbers: last entry in the file wins
+- Invalid rows are reported with line numbers
+
+### Searching Companies
+
+1. Navigate to http://localhost:3000
+2. Start typing in the search field
+3. Results appear progressively as you type
+4. Search works across:
+   - Company name
+   - City
+   - CoC number (Chamber of Commerce number)
+
+
+### Models
+
+**Company** (`app/models/company.rb`)
+- Core business entity
+- Validations for required fields
+- Case-insensitive search method using SQL LOWER()
+
+### Controllers
+
+**CompaniesController** (`app/controllers/companies_controller.rb`)
+- Handles search requests
+- Returns Turbo Stream responses for progressive search
+
+**Admin::ImportsController** (`app/controllers/admin/imports_controller.rb`)
+- Manages CSV upload and import
+- Coordinates validation and import services
+
+### Service Objects
+
+**CsvValidator** (`app/services/csv_validator.rb`)
+- Validates file format, size, and structure
+- Checks for required headers
+- Ensures file is not empty or malformed
+
+**CsvImporter** (`app/services/csv_importer.rb`)
+- Handles the actual import logic
+- Provides detailed error reporting per row
+- Tracks imported, updated, and skipped records
+
+### Database Schema
+
+```ruby
+create_table "companies" do |t|
+  t.string "coc_number", null: false
+  t.string "name", null: false
+  t.string "city"
+  t.string "address"
+  t.string "postal_code"
+  t.datetime "created_at", null: false
+  t.datetime "updated_at", null: false
+end
+
+# Indexes
+add_index "companies", "coc_number", unique: true
+add_index "companies", "LOWER(name)"
+add_index "companies", "LOWER(city)"
+add_index "companies", "LOWER(coc_number)"
+```
+
+## Performance Optimizations
+
+### Expression Indexes
+
+The application uses expression indexes for optimal case-insensitive search:
+
+- `LOWER(name)` - For company name searches
+- `LOWER(city)` - For city searches  
+- `LOWER(coc_number)` - For CoC number searches
+
+These indexes ensure fast LIKE queries without case-sensitivity issues across different database systems (SQLite, PostgreSQL, MySQL).
