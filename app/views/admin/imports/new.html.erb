@@ -1,0 +1,42 @@
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-6 offset-md-3">
+      <h1 class="mb-4">Import Companies</h1>
+
+      <% if flash[:notice] %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <%= flash[:notice] %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% end %>
+
+      <% if flash[:alert] %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <%= flash[:alert] %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% end %>
+
+      <div class="card">
+        <div class="card-body">
+          <%= form_with url: admin_imports_path, method: :post, multipart: true, class: "mb-3" do |f| %>
+            <div class="mb-3">
+              <%= f.label :csv_file, "Select CSV File", class: "form-label" %>
+              <%= f.file_field :csv_file, accept: ".csv", required: true, class: "form-control" %>
+              <div class="form-text">
+                Upload a CSV file with semicolon-separated columns: coc_number;company_name;city
+              </div>
+            </div>
+            
+            <%= f.submit "Import Companies", class: "btn btn-primary" %>
+            <%= link_to "Back to Search", root_path, class: "btn btn-secondary" %>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="alert alert-info mt-4">
+        <strong>Note:</strong> If a company with the same CoC number already exists, it will be updated with the new data.
+      </div>
+    </div>
+  </div>
+</div>
