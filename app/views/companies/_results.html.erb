@@ -1,0 +1,31 @@
+<% if params[:query].present? %>
+  <% if @companies.any? %>
+    <p class="text-muted mb-3">Found <%= @companies.size %> result<%= 's' if @companies.size != 1 %></p>
+    
+    <div class="list-group">
+      <% @companies.each do |company| %>
+        <div class="list-group-item">
+          <div class="d-flex w-100 justify-content-between align-items-start">
+            <div>
+              <h5 class="mb-1"><%= company.name %></h5>
+              <p class="mb-1">
+                <span class="badge bg-secondary"><%= company.coc_number %></span>
+              </p>
+              <small class="text-muted">
+                <% if company.city.present? %>
+                  <%= company.city %>
+                <% end %>
+              </small>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="alert alert-info">
+      No companies found for "<%= params[:query] %>". Try a different search term.
+    </div>
+  <% end %>
+<% else %>
+  <p class="text-muted">Enter a search term to find companies.</p>
+<% end %>
